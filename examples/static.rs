@@ -16,13 +16,13 @@ impl DeviceInfoProvider for DevicesSimpleHolder {
     fn get_device_description(&self, room: &str, name: &str) -> Result<String, &'static str> {
         for si in &self.sockets {
             if si.room == room && si.name == name {
-                return Ok(si.device.info()?);
+                return si.device.info();
             }
         }
 
         for ti in &self.thermometers {
             if ti.room == room && ti.name == name {
-                return Ok(ti.device.info()?);
+                return ti.device.info();
             }
         }
 

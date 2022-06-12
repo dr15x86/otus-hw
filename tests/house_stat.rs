@@ -48,13 +48,13 @@ impl DeviceInfoProvider for DevicesSimpleHolder {
     fn get_device_description(&self, room: &str, name: &str) -> Result<String, &'static str> {
         for si in &self.sockets {
             if si.room == room && si.name == name {
-                return Ok(si.device.info()?);
+                return si.device.info();
             }
         }
 
         for ti in &self.thermometers {
             if ti.room == room && ti.name == name {
-                return Ok(ti.device.info()?);
+                return ti.device.info();
             }
         }
 
@@ -110,6 +110,6 @@ fn stat_house_create_report() {
     assert!(house.add_room(room2).is_ok());
 
     let report = house.create_report(&holder).unwrap();
-    assert!(report.find("device: sock 2-2").is_some());
-    assert!(report.find("temperature: 27").is_some());
+    assert!(report.contains("device: sock 2-2"));
+    assert!(report.contains("temperature: 27"));
 }

@@ -45,8 +45,7 @@ fn dyn_room_add_devices() {
         .unwrap()
         .info()
         .unwrap()
-        .find("15")
-        .is_some());
+        .contains("15"));
 }
 
 #[test]
@@ -92,6 +91,6 @@ fn dyn_house_create_report() {
 
     let report = house.create_report().unwrap();
 
-    assert!(report.find("device: sock 2-2").is_some());
-    assert!(report.find("temperature: 27").is_some());
+    assert!(report.contains("device: sock 2-2"));
+    assert!(report.contains("temperature: 27"));
 }

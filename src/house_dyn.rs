@@ -96,8 +96,8 @@ impl Room {
         };
     }
 
-    pub fn get_device(&self, device_name: &str) -> Option<&Box<dyn Device>> {
-        self.devices.get(device_name)
+    pub fn get_device(&self, device_name: &str) -> Option<&dyn Device> {
+        self.devices.get(device_name).map(|v| v.as_ref())
     }
 
     pub fn device_names(&self) -> Vec<&str> {
