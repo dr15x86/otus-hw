@@ -10,7 +10,7 @@ fn stat_house_new() {
 }
 
 #[test]
-fn stat_house_add_get_rooms() {
+fn stat_house_modify_rooms() {
     let mut house = House::new("test house".into());
 
     assert!(house.add_room(Room::new("room 1".into())).is_ok());

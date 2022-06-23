@@ -29,6 +29,13 @@ impl House {
         };
     }
 
+    pub fn remove_room(&mut self, room_name: &str) -> Result<(), &'static str> {
+        match self.rooms.remove(room_name) {
+            Some(_) => Ok(()),
+            None => Err("Room with this name not exists"),
+        }
+    }
+
     pub fn get_room(&self, room_name: &str) -> Option<&Room> {
         self.rooms.get(room_name)
     }
@@ -94,6 +101,13 @@ impl Room {
                 Ok(())
             }
         };
+    }
+
+    pub fn remove_device(&mut self, device_name: &str) -> Result<(), &'static str> {
+        match self.devices.remove(device_name) {
+            Some(_) => Ok(()),
+            None => Err("Device with this name not exists"),
+        }
     }
 
     pub fn get_device(&self, device_name: &str) -> Option<&dyn Device> {

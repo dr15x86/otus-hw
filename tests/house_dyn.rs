@@ -10,12 +10,15 @@ fn dyn_house_new() {
 }
 
 #[test]
-fn dyn_house_add_get_rooms() {
+fn dyn_house_modify_rooms() {
     let mut house = House::new("test house".into());
 
     assert!(house.add_room(Room::new("room 1".into())).is_ok());
     assert!(house.add_room(Room::new("room 2".into())).is_ok());
     assert!(house.add_room(Room::new("room 1".into())).is_err());
+    assert!(house.remove_room("room 1".into()).is_ok());
+    assert!(house.remove_room("room 1".into()).is_err());
+    assert!(house.add_room(Room::new("room 1".into())).is_ok());
 
     assert_eq!(house.room_names(), ["room 1", "room 2"]);
 
@@ -23,7 +26,7 @@ fn dyn_house_add_get_rooms() {
 }
 
 #[test]
-fn dyn_room_add_devices() {
+fn dyn_room_modify_devices() {
     let mut room = Room::new("room 1".into());
 
     assert!(room
@@ -37,6 +40,13 @@ fn dyn_room_add_devices() {
     assert!(room
         .add_device("thermometer 1".into(), Box::new(Thermometer::default()))
         .is_err());
+
+    assert!(room.remove_device("thermometer 1".into()).is_ok());
+    assert!(room.remove_device("thermometer 1".into()).is_err());
+
+    assert!(room
+        .add_device("thermometer 1".into(), Box::new(Thermometer::default()))
+        .is_ok());
 
     assert_eq!(room.device_names(), ["thermometer 1", "thermometer 2"]);
 
