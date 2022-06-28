@@ -16,8 +16,8 @@ fn dyn_house_modify_rooms() {
     assert!(house.add_room(Room::new("room 1".into())).is_ok());
     assert!(house.add_room(Room::new("room 2".into())).is_ok());
     assert!(house.add_room(Room::new("room 1".into())).is_err());
-    assert!(house.remove_room("room 1".into()).is_ok());
-    assert!(house.remove_room("room 1".into()).is_err());
+    assert!(house.remove_room("room 1").is_ok());
+    assert!(house.remove_room("room 1").is_err());
     assert!(house.add_room(Room::new("room 1".into())).is_ok());
 
     assert_eq!(house.room_names(), ["room 1", "room 2"]);
@@ -41,8 +41,8 @@ fn dyn_room_modify_devices() {
         .add_device("thermometer 1".into(), Box::new(Thermometer::default()))
         .is_err());
 
-    assert!(room.remove_device("thermometer 1".into()).is_ok());
-    assert!(room.remove_device("thermometer 1".into()).is_err());
+    assert!(room.remove_device("thermometer 1").is_ok());
+    assert!(room.remove_device("thermometer 1").is_err());
 
     assert!(room
         .add_device("thermometer 1".into(), Box::new(Thermometer::default()))
