@@ -1,4 +1,5 @@
 use std::collections::{hash_map::Entry, HashMap};
+use std::fmt::Write as _;
 
 use crate::devices::Device;
 
@@ -55,16 +56,17 @@ impl House {
         let mut result = format!("home: {}\n", self.name);
 
         for r in self.room_names() {
-            result.push_str(&format!("    room: {}\n", r));
+            let _ = writeln!(result, "    room: {}", r);
 
             let cur_room = self.get_room(r).unwrap();
 
             for d in cur_room.device_names() {
-                result.push_str(&format!("        device: {}\n", d));
-                result.push_str(&format!(
-                    "            {}\n",
+                let _ = writeln!(result, "        device: {}", d);
+                let _ = writeln!(
+                    result,
+                    "            {}",
                     &cur_room.get_device(d).unwrap().info()?
-                ));
+                );
             }
         }
 

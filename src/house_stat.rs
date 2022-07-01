@@ -1,4 +1,5 @@
 use std::collections::{hash_map::Entry, HashMap, HashSet};
+use std::fmt::Write as _;
 
 pub struct House {
     name: String,
@@ -46,16 +47,13 @@ impl House {
         let mut result = format!("home: {}\n", self.name);
 
         for r in self.room_names() {
-            result.push_str(&format!("    room: {}\n", r));
+            let _ = writeln!(result, "    room: {}", r);
 
             let cur_room = self.get_room(r).ok_or("Room with this name not exists")?;
 
             for d in cur_room.device_names() {
-                result.push_str(&format!("        device: {}\n", d));
-                result.push_str(&format!(
-                    "            {}\n",
-                    info.get_device_description(r, d)?
-                ));
+                let _ = writeln!(result, "        device: {}", d);
+                let _ = writeln!(result, "            {}", info.get_device_description(r, d)?);
             }
         }
 
