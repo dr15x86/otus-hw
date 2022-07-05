@@ -12,9 +12,7 @@
                 "args": [
                     "run",
                     "--bin",
-                    "client",
-                    "--",
-                    "status"
+                    "thermometer_server",
                 ],
                 "filter": {
                     "name": "otus-hw",
@@ -22,7 +20,8 @@
                 }
             },
             "args": [],
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}",
+            "externalConsole": true
         },
         {
             "name": "(Windows) Launch",

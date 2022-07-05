@@ -9,6 +9,9 @@ pub enum Error {
     #[error("Bad utf8 encoding")]
     BadEncoding,
 
+    #[error("Bad command")]
+    BadCommand,
+
     #[error("Bad SocketAddr values")]
     BadSocketAddr,
 

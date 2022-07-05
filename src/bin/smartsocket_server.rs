@@ -7,13 +7,16 @@ use clap::Parser;
 use otus_hw::devices::socket::{Socket as SmartSocket, SocketState as SmartSocketState};
 use otus_hw::devices::Device;
 use otus_hw::error::Error;
-use otus_hw::tcp::{recv_str, send_str, COMMAND_OFF, COMMAND_ON, COMMAND_STATUS, DEFAULT_ADDR};
+use otus_hw::network::constants::{
+    COMMAND_SOCKET_OFF, COMMAND_SOCKET_ON, COMMAND_SOCKET_STATUS, DEFAULT_TCP_ADDR,
+};
+use otus_hw::network::{recv_str, send_str};
 
 /// Smart Socket server
 #[derive(Parser)]
 struct Args {
     /// Binding server address
-    #[clap(default_value_t = DEFAULT_ADDR.parse().unwrap(), value_parser)]
+    #[clap(default_value_t = DEFAULT_TCP_ADDR.parse().unwrap(), value_parser)]
     addr: SocketAddr,
 }
 
@@ -51,16 +54,16 @@ fn main() -> Result<(), Error> {
             })?;
 
             match cmd.as_str() {
-                COMMAND_ON => {
+                COMMAND_SOCKET_ON => {
                     smart_socket.lock().unwrap().set_state(SmartSocketState::On);
                 }
-                COMMAND_OFF => {
+                COMMAND_SOCKET_OFF => {
                     smart_socket
                         .lock()
                         .unwrap()
                         .set_state(SmartSocketState::Off);
                 }
-                COMMAND_STATUS => {
+                COMMAND_SOCKET_STATUS => {
                     let status = smart_socket
                         .lock()
                         .unwrap()
