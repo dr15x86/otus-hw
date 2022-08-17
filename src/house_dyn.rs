@@ -1,5 +1,7 @@
-use std::collections::{hash_map::Entry, HashMap};
-use std::fmt::Write as _;
+use std::{
+    collections::{hash_map::Entry, HashMap},
+    fmt::Write,
+};
 
 use crate::devices::Device;
 

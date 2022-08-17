@@ -1,16 +1,24 @@
-use std::net::{SocketAddr, TcpListener};
-use std::sync::{Arc, Mutex};
-use std::thread;
+use std::{
+    net::SocketAddr,
+    sync::{Arc, Mutex},
+};
 
 use clap::Parser;
+use tokio::net::TcpListener;
 
-use otus_hw::devices::socket::{Socket as SmartSocket, SocketState as SmartSocketState};
-use otus_hw::devices::Device;
-use otus_hw::error::Error;
-use otus_hw::network::constants::{
-    COMMAND_SOCKET_OFF, COMMAND_SOCKET_ON, COMMAND_SOCKET_STATUS, DEFAULT_TCP_ADDR,
+use otus_hw::{
+    devices::{
+        socket::{Socket as SmartSocket, SocketState as SmartSocketState},
+        Device,
+    },
+    error::Error,
+    network::{
+        constants::{
+            COMMAND_SOCKET_OFF, COMMAND_SOCKET_ON, COMMAND_SOCKET_STATUS, DEFAULT_TCP_ADDR,
+        },
+        recv_str, send_str,
+    },
 };
-use otus_hw::network::{recv_str, send_str};
 
 /// Smart Socket server
 #[derive(Parser)]
@@ -20,17 +28,18 @@ struct Args {
     addr: SocketAddr,
 }
 
-fn main() -> Result<(), Error> {
-    let socket = Arc::new(Mutex::new(SmartSocket::default()));
+#[tokio::main]
+async fn main() -> Result<(), Error> {
+    let smart_socket = Arc::new(Mutex::new(SmartSocket::default()));
 
     let args = Args::parse();
 
-    let listener = TcpListener::bind(args.addr)?;
+    let listener = TcpListener::bind(args.addr).await?;
 
     println!("Server running on {}", listener.local_addr()?);
 
-    for stream in listener.incoming() {
-        let mut stream = match stream {
+    loop {
+        let (mut net_socket, peer_addr) = match listener.accept().await {
             Ok(s) => s,
             Err(e) => {
                 eprintln!("Can't establish connection: {e}");
@@ -38,17 +47,12 @@ fn main() -> Result<(), Error> {
             }
         };
 
-        let smart_socket = Arc::clone(&socket);
+        let smart_socket = Arc::clone(&smart_socket);
 
-        thread::spawn(move || -> Result<(), Error> {
-            let peer_addr = match stream.peer_addr() {
-                Ok(addr) => addr.to_string(),
-                Err(_) => "unknown".to_string(),
-            };
-
+        tokio::spawn(async move {
             println!("{peer_addr}: new client connected");
 
-            let cmd = recv_str(&mut stream).map_err(|err| {
+            let cmd = recv_str(&mut net_socket).await.map_err(|err| {
                 eprintln!("{peer_addr}: recv_str error: {err}");
                 err
             })?;
@@ -70,7 +74,7 @@ fn main() -> Result<(), Error> {
                         .info()
                         .unwrap_or_else(|err| err.into());
 
-                    send_str(status, &mut stream).map_err(|err| {
+                    send_str(status, &mut net_socket).await.map_err(|err| {
                         eprintln!("{peer_addr}: send_str error: {err}");
                         err
                     })?;
@@ -79,9 +83,8 @@ fn main() -> Result<(), Error> {
                     eprintln!("{peer_addr}: unknown command {unknown}");
                 }
             }
-            Ok(())
+
+            Ok::<(), Error>(())
         });
     }
-
-    Ok(())
 }

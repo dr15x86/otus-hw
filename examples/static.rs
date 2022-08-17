@@ -1,5 +1,7 @@
-use otus_hw::devices::{socket::Socket, socket::SocketState, thermometer::Thermometer, Device};
-use otus_hw::house_stat::{DeviceInfoProvider, House, Room};
+use otus_hw::{
+    devices::{socket::Socket, socket::SocketState, thermometer::Thermometer, Device},
+    house_stat::{DeviceInfoProvider, House, Room},
+};
 
 struct HolderItem<T: Device> {
     device: T,

@@ -1,5 +1,7 @@
-use std::collections::{hash_map::Entry, HashMap, HashSet};
-use std::fmt::Write as _;
+use std::{
+    collections::{hash_map::Entry, HashMap, HashSet},
+    fmt::Write,
+};
 
 pub struct House {
     name: String,

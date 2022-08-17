@@ -1,5 +1,7 @@
-use otus_hw::devices::{socket::Socket, socket::SocketState, thermometer::Thermometer};
-use otus_hw::house_dyn::{House, Room};
+use otus_hw::{
+    devices::{socket::Socket, socket::SocketState, thermometer::Thermometer},
+    house_dyn::{House, Room},
+};
 
 fn main() {
     let mut house = House::new("house 1".into());

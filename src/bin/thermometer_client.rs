@@ -1,14 +1,18 @@
-use std::net::{SocketAddr, UdpSocket};
-use std::{thread, time};
+use std::{net::SocketAddr, time::Duration};
 
 use clap::{Parser, Subcommand};
+use tokio::{net::UdpSocket, time::sleep};
 
-use otus_hw::error::Error;
-use otus_hw::network::constants::{
-    COMMAND_THERMOMETER_SET_TEMP, COMMAND_THERMOMETER_STATUS, DEFAULT_UDP_CLIENT_ADDR,
-    DEFAULT_UDP_SERV_ADDR,
+use otus_hw::{
+    error::Error,
+    network::{
+        constants::{
+            COMMAND_THERMOMETER_SET_TEMP, COMMAND_THERMOMETER_STATUS, DEFAULT_UDP_CLIENT_ADDR,
+            DEFAULT_UDP_SERV_ADDR,
+        },
+        recv_str_from_udp, send_str_to_udp,
+    },
 };
-use otus_hw::network::{recv_str_from_udp, send_str_to_udp};
 
 /// Smart Socket client
 #[derive(Parser)]
@@ -43,28 +47,36 @@ enum Commands {
     },
 }
 
-fn main() -> Result<(), Error> {
+#[tokio::main]
+async fn main() -> Result<(), Error> {
     let args = Args::parse();
 
-    let socket = UdpSocket::bind(args.client_address)?;
+    let socket = UdpSocket::bind(args.client_address).await?;
     println!("Client bind to address: {}", socket.local_addr()?);
 
     match args.command {
         Commands::Status => {
-            send_str_to_udp(COMMAND_THERMOMETER_STATUS, &socket, args.address)?;
-            println!("thermometer status: {}", recv_str_from_udp(&socket)?.0);
+            send_str_to_udp(COMMAND_THERMOMETER_STATUS, &socket, args.address).await?;
+            println!(
+                "thermometer status: {}",
+                recv_str_from_udp(&socket).await?.0
+            );
         }
         Commands::Watch { interval } => loop {
-            send_str_to_udp(COMMAND_THERMOMETER_STATUS, &socket, args.address)?;
-            println!("thermometer status: {}", recv_str_from_udp(&socket)?.0);
-            thread::sleep(time::Duration::from_secs(interval.into()));
+            send_str_to_udp(COMMAND_THERMOMETER_STATUS, &socket, args.address).await?;
+            println!(
+                "thermometer status: {}",
+                recv_str_from_udp(&socket).await?.0
+            );
+            sleep(Duration::from_secs(interval.into())).await;
         },
         Commands::SetTemperature { temp } => {
             send_str_to_udp(
                 format!("{}{}", COMMAND_THERMOMETER_SET_TEMP, temp),
                 &socket,
                 args.address,
-            )?;
+            )
+            .await?;
         }
     }
 

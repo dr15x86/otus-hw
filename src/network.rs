@@ -1,6 +1,9 @@
-use std::io::{Cursor, Read, Write};
-use std::mem::size_of;
-use std::net::{SocketAddr, UdpSocket};
+use std::{io::Cursor, mem::size_of, net::SocketAddr};
+
+use tokio::{
+    io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt},
+    net::UdpSocket,
+};
 
 use crate::error::Error;
 
@@ -22,29 +25,32 @@ pub mod constants {
     pub const COMMAND_THERMOMETER_STATUS: &str = "thermometer status";
 }
 
-pub fn send_str(str: impl AsRef<str>, writer: &mut impl Write) -> Result<(), Error> {
+pub async fn send_str(
+    str: impl AsRef<str>,
+    writer: &mut (impl AsyncWrite + Unpin),
+) -> Result<(), Error> {
     let str_bytes = str.as_ref().as_bytes();
     let len_bytes = (str_bytes.len() as SizeType).to_be_bytes();
 
-    writer.write_all(&len_bytes)?;
-    writer.write_all(str_bytes)?;
+    writer.write_all(&len_bytes).await?;
+    writer.write_all(str_bytes).await?;
 
     Ok(())
 }
 
-pub fn recv_str(reader: &mut impl Read) -> Result<String, Error> {
+pub async fn recv_str(reader: &mut (impl AsyncRead + Unpin)) -> Result<String, Error> {
     let mut buf = [0; size_of::<SizeType>()];
-    reader.read_exact(&mut buf)?;
+    reader.read_exact(&mut buf).await?;
 
     let len = SizeType::from_be_bytes(buf);
 
     let mut buf = vec![0; len as _];
-    reader.read_exact(&mut buf)?;
+    reader.read_exact(&mut buf).await?;
 
     String::from_utf8(buf).map_err(|_| Error::BadEncoding)
 }
 
-pub fn send_str_to_udp(
+pub async fn send_str_to_udp(
     str: impl AsRef<str>,
     socket: &UdpSocket,
     addr: SocketAddr,
@@ -52,17 +58,17 @@ pub fn send_str_to_udp(
     let mut vec = Vec::with_capacity(size_of::<SizeType>() + str.as_ref().len());
     let mut cursor = Cursor::new(&mut vec);
 
-    send_str(str, &mut cursor)?;
-    socket.send_to(&vec, addr)?;
+    send_str(str, &mut cursor).await?;
+    socket.send_to(&vec, addr).await?;
 
     Ok(())
 }
 
-pub fn recv_str_from_udp(socket: &UdpSocket) -> Result<(String, SocketAddr), Error> {
+pub async fn recv_str_from_udp(socket: &UdpSocket) -> Result<(String, SocketAddr), Error> {
     let mut buf = [0; MAX_DATAGRAM_SIZE];
-    let (number_of_bytes, peer_addr) = socket.recv_from(&mut buf)?;
+    let (number_of_bytes, peer_addr) = socket.recv_from(&mut buf).await?;
     let mut cursor = Cursor::new(&buf[..number_of_bytes]);
-    let result_str = recv_str(&mut cursor)?;
+    let result_str = recv_str(&mut cursor).await?;
 
     Ok((result_str, peer_addr))
 }
