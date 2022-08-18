@@ -1,9 +1,12 @@
 use std::{
     collections::{hash_map::Entry, HashMap},
     fmt::Write,
+    result,
 };
 
 use crate::devices::Device;
+
+pub type Result<T> = result::Result<T, &'static str>;
 
 pub struct House {
     name: String,
@@ -22,7 +25,7 @@ impl House {
         &self.name
     }
 
-    pub fn add_room(&mut self, room: Room) -> Result<(), &'static str> {
+    pub fn add_room(&mut self, room: Room) -> Result<()> {
         return match self.rooms.entry(room.name().into()) {
             Entry::Occupied(_) => Err("Room with this name already exists"),
             Entry::Vacant(v) => {
@@ -32,7 +35,7 @@ impl House {
         };
     }
 
-    pub fn remove_room(&mut self, room_name: &str) -> Result<(), &'static str> {
+    pub fn remove_room(&mut self, room_name: &str) -> Result<()> {
         match self.rooms.remove(room_name) {
             Some(_) => Ok(()),
             None => Err("Room with this name not exists"),
@@ -54,7 +57,7 @@ impl House {
         result
     }
 
-    pub fn create_report(&self) -> Result<String, &'static str> {
+    pub fn create_report(&self) -> Result<String> {
         let mut result = format!("home: {}\n", self.name);
 
         for r in self.room_names() {
@@ -93,11 +96,7 @@ impl Room {
         &self.name
     }
 
-    pub fn add_device(
-        &mut self,
-        device_name: String,
-        device: Box<dyn Device>,
-    ) -> Result<(), &'static str> {
+    pub fn add_device(&mut self, device_name: String, device: Box<dyn Device>) -> Result<()> {
         return match self.devices.entry(device_name) {
             Entry::Occupied(_) => Err("Device with this name already exists"),
             Entry::Vacant(v) => {
@@ -107,7 +106,7 @@ impl Room {
         };
     }
 
-    pub fn remove_device(&mut self, device_name: &str) -> Result<(), &'static str> {
+    pub fn remove_device(&mut self, device_name: &str) -> Result<()> {
         match self.devices.remove(device_name) {
             Some(_) => Ok(()),
             None => Err("Device with this name not exists"),
