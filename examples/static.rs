@@ -1,5 +1,6 @@
 use otus_hw::{
     devices::{socket::Socket, socket::SocketState, thermometer::Thermometer, Device},
+    error::ResultStr,
     house_stat::{DeviceInfoProvider, House, Room},
 };
 
@@ -15,7 +16,7 @@ struct DevicesSimpleHolder {
 }
 
 impl DeviceInfoProvider for DevicesSimpleHolder {
-    fn get_device_description(&self, room: &str, name: &str) -> Result<String, &'static str> {
+    fn get_device_description(&self, room: &str, name: &str) -> ResultStr<String> {
         for si in &self.sockets {
             if si.room == room && si.name == name {
                 return si.device.info();

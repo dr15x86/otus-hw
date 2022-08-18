@@ -1,7 +1,11 @@
-use otus_hw::devices::{
-    socket::{Socket, SocketState},
-    thermometer::Thermometer,
-    Device,
+use otus_hw::{
+    custom_reporter::{Accept, Reporter},
+    devices::{
+        socket::{Socket, SocketState},
+        thermometer::Thermometer,
+        Device,
+    },
+    error::{Result, ResultStr},
 };
 
 struct Logger<D: Device> {
@@ -16,9 +20,16 @@ impl<D: Device> Logger<D> {
 }
 
 impl<D: Device> Device for Logger<D> {
-    fn info(&self) -> Result<String, &'static str> {
+    fn info(&self) -> ResultStr<String> {
         println!("Before call `info` for {}", self.tag);
         self.device.info()
+    }
+}
+
+impl<D: Device> Accept for Logger<D> {
+    fn accept(&self, visitor: &mut dyn Reporter) -> Result<()> {
+        self.device.accept(visitor)?;
+        Ok(())
     }
 }
 

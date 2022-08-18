@@ -5,7 +5,7 @@ use tokio::{
     net::UdpSocket,
 };
 
-use crate::error::Error;
+use crate::error::{Error, Result};
 
 type SizeType = u64;
 
@@ -25,10 +25,7 @@ pub mod constants {
     pub const COMMAND_THERMOMETER_STATUS: &str = "thermometer status";
 }
 
-pub async fn send_str(
-    str: impl AsRef<str>,
-    writer: &mut (impl AsyncWrite + Unpin),
-) -> Result<(), Error> {
+pub async fn send_str(str: impl AsRef<str>, writer: &mut (impl AsyncWrite + Unpin)) -> Result<()> {
     let str_bytes = str.as_ref().as_bytes();
     let len_bytes = (str_bytes.len() as SizeType).to_be_bytes();
 
@@ -38,7 +35,7 @@ pub async fn send_str(
     Ok(())
 }
 
-pub async fn recv_str(reader: &mut (impl AsyncRead + Unpin)) -> Result<String, Error> {
+pub async fn recv_str(reader: &mut (impl AsyncRead + Unpin)) -> Result<String> {
     let mut buf = [0; size_of::<SizeType>()];
     reader.read_exact(&mut buf).await?;
 
@@ -54,7 +51,7 @@ pub async fn send_str_to_udp(
     str: impl AsRef<str>,
     socket: &UdpSocket,
     addr: SocketAddr,
-) -> Result<(), Error> {
+) -> Result<()> {
     let mut vec = Vec::with_capacity(size_of::<SizeType>() + str.as_ref().len());
     let mut cursor = Cursor::new(&mut vec);
 
@@ -64,7 +61,7 @@ pub async fn send_str_to_udp(
     Ok(())
 }
 
-pub async fn recv_str_from_udp(socket: &UdpSocket) -> Result<(String, SocketAddr), Error> {
+pub async fn recv_str_from_udp(socket: &UdpSocket) -> Result<(String, SocketAddr)> {
     let mut buf = [0; MAX_DATAGRAM_SIZE];
     let (number_of_bytes, peer_addr) = socket.recv_from(&mut buf).await?;
     let mut cursor = Cursor::new(&buf[..number_of_bytes]);

@@ -1,4 +1,4 @@
-use std::io;
+use std::{io, result};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -18,3 +18,6 @@ pub enum Error {
     #[error("Print usage and exit")]
     PrintUsageAndExit,
 }
+
+pub type Result<T> = result::Result<T, Error>;
+pub type ResultStr<T> = result::Result<T, &'static str>;

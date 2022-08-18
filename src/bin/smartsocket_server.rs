@@ -11,7 +11,7 @@ use otus_hw::{
         socket::{Socket as SmartSocket, SocketState as SmartSocketState},
         Device,
     },
-    error::Error,
+    error::{Error, Result},
     network::{
         constants::{
             COMMAND_SOCKET_OFF, COMMAND_SOCKET_ON, COMMAND_SOCKET_STATUS, DEFAULT_TCP_ADDR,
@@ -29,7 +29,7 @@ struct Args {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<()> {
     let smart_socket = Arc::new(Mutex::new(SmartSocket::default()));
 
     let args = Args::parse();

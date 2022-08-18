@@ -1,4 +1,8 @@
-use crate::devices::Device;
+use crate::{
+    custom_reporter::{Accept, Reporter},
+    devices::Device,
+    error::{Result, ResultStr},
+};
 
 pub struct Socket {
     state: SocketState,
@@ -43,12 +47,27 @@ impl Socket {
 }
 
 impl Device for Socket {
-    fn info(&self) -> Result<String, &'static str> {
+    fn info(&self) -> ResultStr<String> {
         let state = match self.state {
             SocketState::On => "on",
             SocketState::Off => "off",
         };
 
         Ok(format!("state: {}, power: {}", state, self.power))
+    }
+}
+
+impl Accept for Socket {
+    fn accept(&self, visitor: &mut dyn Reporter) -> Result<()> {
+        visitor.element_type("socket".into())?;
+        visitor.element_attr(
+            "state".into(),
+            match self.state {
+                SocketState::On => "on".into(),
+                SocketState::Off => "off".into(),
+            },
+        )?;
+        visitor.element_attr("power".into(), self.power.to_string())?;
+        Ok(())
     }
 }

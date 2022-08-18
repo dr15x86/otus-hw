@@ -1,6 +1,7 @@
 use crate::{
     devices::{socket::Socket, socket::SocketState, thermometer::Thermometer},
-    house_dyn::{House, Result, Room},
+    error::ResultStr,
+    house_dyn::{House, Room},
 };
 
 pub struct Builder {
@@ -41,7 +42,7 @@ impl RoomBuilder {
         ThermometerBuilder::new(thermometer_name, self.room, self.house)
     }
 
-    pub fn build_room(mut self) -> Result<Builder> {
+    pub fn build_room(mut self) -> ResultStr<Builder> {
         self.house.add_room(self.room)?;
         Ok(Builder::restore(self.house))
     }
@@ -76,7 +77,7 @@ impl SocketBuilder {
         self
     }
 
-    pub fn build_socket(mut self) -> Result<RoomBuilder> {
+    pub fn build_socket(mut self) -> ResultStr<RoomBuilder> {
         self.room
             .add_device(self.socket_name, Box::new(self.socket))?;
         Ok(RoomBuilder::restore(self.room, self.house))
@@ -105,7 +106,7 @@ impl ThermometerBuilder {
         self
     }
 
-    pub fn build_thermometer(mut self) -> Result<RoomBuilder> {
+    pub fn build_thermometer(mut self) -> ResultStr<RoomBuilder> {
         self.room
             .add_device(self.thermometer_name, Box::new(self.thermometer))?;
         Ok(RoomBuilder::restore(self.room, self.house))

@@ -4,7 +4,7 @@ use clap::{Parser, Subcommand};
 use tokio::net::TcpStream;
 
 use otus_hw::{
-    error::Error,
+    error::Result,
     network::{
         constants::{
             COMMAND_SOCKET_OFF, COMMAND_SOCKET_ON, COMMAND_SOCKET_STATUS, DEFAULT_TCP_ADDR,
@@ -35,7 +35,7 @@ enum Commands {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<()> {
     let args = Args::parse();
 
     let mut stream = TcpStream::connect(args.address).await?;

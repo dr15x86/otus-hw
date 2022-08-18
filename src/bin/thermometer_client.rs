@@ -4,7 +4,7 @@ use clap::{Parser, Subcommand};
 use tokio::{net::UdpSocket, time::sleep};
 
 use otus_hw::{
-    error::Error,
+    error::Result,
     network::{
         constants::{
             COMMAND_THERMOMETER_SET_TEMP, COMMAND_THERMOMETER_STATUS, DEFAULT_UDP_CLIENT_ADDR,
@@ -48,7 +48,7 @@ enum Commands {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<()> {
     let args = Args::parse();
 
     let socket = UdpSocket::bind(args.client_address).await?;

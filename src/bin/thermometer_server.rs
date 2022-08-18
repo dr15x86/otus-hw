@@ -8,7 +8,7 @@ use tokio::net::UdpSocket;
 
 use otus_hw::{
     devices::{thermometer::Thermometer, Device},
-    error::Error,
+    error::{Error, Result},
     network::{
         constants::{
             COMMAND_THERMOMETER_SET_TEMP, COMMAND_THERMOMETER_STATUS, DEFAULT_UDP_SERV_ADDR,
@@ -26,7 +26,7 @@ struct Args {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<()> {
     let args = Args::parse();
 
     let thermometer = Arc::new(Mutex::new(Thermometer::default()));
@@ -74,7 +74,7 @@ async fn main() -> Result<(), Error> {
     }
 }
 
-fn parse_set_temp_cmd(cmd: &str) -> Result<f32, Error> {
+fn parse_set_temp_cmd(cmd: &str) -> Result<f32> {
     let cmd = &cmd[COMMAND_THERMOMETER_SET_TEMP.len()..];
     let result = cmd.parse().map_err(|_| Error::BadCommand)?;
     Ok(result)

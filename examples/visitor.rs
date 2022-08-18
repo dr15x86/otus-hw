@@ -1,15 +1,11 @@
 use otus_hw::{
     builder::Builder,
-    devices::{
-        socket::{Socket, SocketState},
-        thermometer::Thermometer,
-    },
+    custom_reporter::{html::HtmlReporter, json::JsonReporter, Accept},
+    devices::socket::SocketState,
     error::ResultStr,
-    house_dyn::{House, Room},
 };
 
-#[test]
-fn builder() -> ResultStr<()> {
+fn main() -> ResultStr<()> {
     let house = Builder::new("test house".into())
         .add_room("room 1".into())
         // ------------------------
@@ -35,21 +31,19 @@ fn builder() -> ResultStr<()> {
         .build_room()?
         .build_house();
 
-    let mut house_expected = House::new("test house".into());
-    let mut room1 = Room::new("room 1".into());
-    room1.add_device("thermometer 1".into(), Box::new(Thermometer::new(23.0)))?;
-    room1.add_device("thermometer 2".into(), Box::new(Thermometer::default()))?;
-    room1.add_device(
-        "socket 1".into(),
-        Box::new(Socket::new(SocketState::On, 120.0)),
-    )?;
-    house_expected.add_room(room1)?;
+    let writer = &mut std::io::stdout();
 
-    let mut room2 = Room::new("room 2".into());
-    room2.add_device("socket 1-2".into(), Box::new(Socket::default()))?;
-    house_expected.add_room(room2)?;
+    println!("JsonReporter:");
+    let mut json_reporter = JsonReporter::new(writer);
+    house.accept(&mut json_reporter).unwrap();
+    json_reporter.finish().unwrap();
+    println!("------------------------------\n");
 
-    assert_eq!(house.create_report()?, house_expected.create_report()?);
+    println!("HtmlReporter:");
+    let mut html_reporter = HtmlReporter::new(writer);
+    house.accept(&mut html_reporter).unwrap();
+    html_reporter.finish().unwrap();
+    println!("------------------------------\n");
 
     Ok(())
 }

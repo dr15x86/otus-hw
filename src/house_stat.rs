@@ -3,6 +3,8 @@ use std::{
     fmt::Write,
 };
 
+use crate::error::ResultStr;
+
 pub struct House {
     name: String,
     rooms: HashMap<String, Room>,
@@ -20,7 +22,7 @@ impl House {
         &self.name
     }
 
-    pub fn add_room(&mut self, room: Room) -> Result<(), &'static str> {
+    pub fn add_room(&mut self, room: Room) -> ResultStr<()> {
         return match self.rooms.entry(room.name().into()) {
             Entry::Occupied(_) => Err("Room with this name already exists"),
             Entry::Vacant(v) => {
@@ -45,7 +47,7 @@ impl House {
         result
     }
 
-    pub fn create_report(&self, info: &impl DeviceInfoProvider) -> Result<String, &'static str> {
+    pub fn create_report(&self, info: &impl DeviceInfoProvider) -> ResultStr<String> {
         let mut result = format!("home: {}\n", self.name);
 
         for r in self.room_names() {
@@ -80,7 +82,7 @@ impl Room {
         &self.name
     }
 
-    pub fn add_device(&mut self, device_name: String) -> Result<(), &'static str> {
+    pub fn add_device(&mut self, device_name: String) -> ResultStr<()> {
         if self.devices.insert(device_name) {
             Ok(())
         } else {
@@ -101,5 +103,5 @@ impl Room {
 }
 
 pub trait DeviceInfoProvider {
-    fn get_device_description(&self, room: &str, name: &str) -> Result<String, &'static str>;
+    fn get_device_description(&self, room: &str, name: &str) -> ResultStr<String>;
 }

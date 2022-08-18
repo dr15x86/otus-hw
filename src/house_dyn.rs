@@ -1,12 +1,13 @@
 use std::{
     collections::{hash_map::Entry, HashMap},
     fmt::Write,
-    result,
 };
 
-use crate::devices::Device;
-
-pub type Result<T> = result::Result<T, &'static str>;
+use crate::{
+    custom_reporter::{Accept, Reporter},
+    devices::Device,
+    error::{Result, ResultStr},
+};
 
 pub struct House {
     name: String,
@@ -25,7 +26,7 @@ impl House {
         &self.name
     }
 
-    pub fn add_room(&mut self, room: Room) -> Result<()> {
+    pub fn add_room(&mut self, room: Room) -> ResultStr<()> {
         return match self.rooms.entry(room.name().into()) {
             Entry::Occupied(_) => Err("Room with this name already exists"),
             Entry::Vacant(v) => {
@@ -35,7 +36,7 @@ impl House {
         };
     }
 
-    pub fn remove_room(&mut self, room_name: &str) -> Result<()> {
+    pub fn remove_room(&mut self, room_name: &str) -> ResultStr<()> {
         match self.rooms.remove(room_name) {
             Some(_) => Ok(()),
             None => Err("Room with this name not exists"),
@@ -57,7 +58,7 @@ impl House {
         result
     }
 
-    pub fn create_report(&self) -> Result<String> {
+    pub fn create_report(&self) -> ResultStr<String> {
         let mut result = format!("home: {}\n", self.name);
 
         for r in self.room_names() {
@@ -79,6 +80,22 @@ impl House {
     }
 }
 
+impl Accept for House {
+    fn accept(&self, visitor: &mut dyn Reporter) -> Result<()> {
+        visitor.start_element(self.name.clone())?;
+        visitor.element_type("house".into())?;
+
+        for name in self.room_names() {
+            visitor.start_element(name.into())?;
+            self.get_room(name).unwrap().accept(visitor)?;
+            visitor.end_element()?;
+        }
+        visitor.end_element()?;
+
+        Ok(())
+    }
+}
+
 pub struct Room {
     name: String,
     devices: HashMap<String, Box<dyn Device>>,
@@ -96,7 +113,7 @@ impl Room {
         &self.name
     }
 
-    pub fn add_device(&mut self, device_name: String, device: Box<dyn Device>) -> Result<()> {
+    pub fn add_device(&mut self, device_name: String, device: Box<dyn Device>) -> ResultStr<()> {
         return match self.devices.entry(device_name) {
             Entry::Occupied(_) => Err("Device with this name already exists"),
             Entry::Vacant(v) => {
@@ -106,7 +123,7 @@ impl Room {
         };
     }
 
-    pub fn remove_device(&mut self, device_name: &str) -> Result<()> {
+    pub fn remove_device(&mut self, device_name: &str) -> ResultStr<()> {
         match self.devices.remove(device_name) {
             Some(_) => Ok(()),
             None => Err("Device with this name not exists"),
@@ -126,5 +143,18 @@ impl Room {
         result.sort_unstable();
 
         result
+    }
+}
+
+impl Accept for Room {
+    fn accept(&self, visitor: &mut dyn Reporter) -> Result<()> {
+        visitor.element_type("room".into())?;
+
+        for name in self.device_names() {
+            visitor.start_element(name.into())?;
+            self.get_device(name).unwrap().accept(visitor)?;
+            visitor.end_element()?;
+        }
+        Ok(())
     }
 }

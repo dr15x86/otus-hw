@@ -1,4 +1,8 @@
-use crate::devices::Device;
+use crate::{
+    custom_reporter::{Accept, Reporter},
+    devices::Device,
+    error::{Result, ResultStr},
+};
 
 pub struct Thermometer {
     temperature: f32,
@@ -25,7 +29,15 @@ impl Thermometer {
 }
 
 impl Device for Thermometer {
-    fn info(&self) -> Result<String, &'static str> {
+    fn info(&self) -> ResultStr<String> {
         Ok(format!("temperature: {}", self.temperature()))
+    }
+}
+
+impl Accept for Thermometer {
+    fn accept(&self, visitor: &mut dyn Reporter) -> Result<()> {
+        visitor.element_type("thermometer".into())?;
+        visitor.element_attr("temperature".into(), self.temperature.to_string())?;
+        Ok(())
     }
 }
